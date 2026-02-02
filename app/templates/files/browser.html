@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Archivos - Gatekeeper NAS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-11 col-xl-10">
+        {% if not mounted %}
+        <!-- NFS Not Mounted Warning -->
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+            <div>
+                <strong>Sistema de archivos no montado.</strong>
+                El servidor debe estar encendido y el NFS montado para acceder a tus archivos.
+                <a href="{{ url_for('dashboard.index') }}" class="alert-link">Ir al Dashboard</a>
+            </div>
+        </div>
+        {% else %}
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h4 mb-0">
+                <i class="bi bi-folder2-open me-2"></i>Mis Archivos
+            </h1>
+            <div>
+                <button id="btn-new-folder" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="bi bi-folder-plus me-1"></i>Nueva Carpeta
+                </button>
+                <button id="btn-upload" class="btn btn-primary btn-sm">
+                    <i class="bi bi-cloud-upload me-1"></i>Subir Archivos
+                </button>
+            </div>
+        </div>
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol id="breadcrumb" class="breadcrumb bg-dark rounded p-2 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="#" data-path="" class="text-decoration-none">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Upload Progress -->
+        <div id="upload-progress" class="card mb-3 d-none">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span id="upload-filename">Subiendo archivo...</span>
+                    <button id="btn-cancel-upload" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+                <div class="progress" style="height: 20px;">
+                    <div id="upload-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" style="width: 0%;">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File List -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 50%;">Nombre</th>
+                                <th style="width: 15%;">Tamano</th>
+                                <th style="width: 20%;">Modificado</th>
+                                <th style="width: 15%;" class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-list">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>
+                                    Cargando archivos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input type="file" id="file-input" multiple class="d-none">
+
+        {% endif %}
+    </div>
+</div>
+
+<!-- New Folder Modal -->
+<div class="modal fade" id="newFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Nueva Carpeta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="new-folder-name" class="form-control"
+                       placeholder="Nombre de la carpeta" maxlength="255">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn-create-folder" class="btn btn-primary">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rename Modal -->
+<div class="modal fade" id="renameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Renombrar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="rename-input" class="form-control" maxlength="255">
+                <input type="hidden" id="rename-path">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn-confirm-rename" class="btn btn-primary">Renombrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar Eliminacion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estas seguro de que deseas eliminar <strong id="delete-filename"></strong>?</p>
+                <p class="text-danger small mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Esta accion no se puede deshacer.
+                </p>
+                <input type="hidden" id="delete-path">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn-confirm-delete" class="btn btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if mounted %}
+<script src="{{ url_for('static', filename='js/files.js') }}"></script>
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endif %}
+{% endblock %}

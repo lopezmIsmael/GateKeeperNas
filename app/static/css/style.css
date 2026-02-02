@@ -1,0 +1,185 @@
+/* Gatekeeper NAS - Custom Styles */
+
+:root {
+    --gk-primary: #0d6efd;
+    --gk-success: #198754;
+    --gk-danger: #dc3545;
+    --gk-warning: #ffc107;
+}
+
+/* General */
+body {
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Tables */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+/* File Browser */
+.file-item {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.file-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.file-item .file-icon {
+    font-size: 1.25rem;
+    width: 2rem;
+    text-align: center;
+}
+
+.file-item .folder-icon {
+    color: #ffc107;
+}
+
+.file-item .file-icon-default {
+    color: #6c757d;
+}
+
+/* Server Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.status-online {
+    background-color: var(--gk-success);
+    box-shadow: 0 0 8px var(--gk-success);
+}
+
+.status-offline {
+    background-color: var(--gk-danger);
+    animation: none;
+}
+
+.status-checking {
+    background-color: var(--gk-warning);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Progress bars */
+.progress {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.breadcrumb-item a {
+    color: #adb5bd;
+}
+
+.breadcrumb-item a:hover {
+    color: #fff;
+}
+
+.breadcrumb-item.active {
+    color: #fff;
+}
+
+/* Quick Action Buttons */
+.btn-outline-primary.py-3:hover,
+.btn-outline-warning.py-3:hover,
+.btn-outline-info.py-3:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s;
+}
+
+/* Login Page */
+.min-vh-100 {
+    padding-top: 0 !important;
+    margin-top: -1.5rem;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+}
+
+/* Action buttons in tables */
+.table .btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Modal improvements */
+.modal-content {
+    border: none;
+}
+
+/* Upload progress */
+#upload-progress {
+    border-left: 4px solid var(--gk-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+
+    .btn-group-sm > .btn,
+    .btn-sm {
+        font-size: 0.75rem;
+    }
+
+    h1.h3, h1.h4 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Loading states */
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Empty state */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}

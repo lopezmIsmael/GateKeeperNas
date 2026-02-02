@@ -1,0 +1,8 @@
+flask>=3.0
+flask-login>=0.6
+flask-wtf>=1.2
+flask-sqlalchemy>=3.1
+werkzeug>=3.0
+paramiko>=3.4
+wakeonlan>=3.1
+python-dotenv>=1.0

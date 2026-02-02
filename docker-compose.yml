@@ -1,0 +1,75 @@
+# Gatekeeper NAS - Docker Compose
+# Para desplegar en Raspberry Pi
+
+services:
+  gatekeeper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gatekeeper-nas
+    restart: unless-stopped
+
+    # Puertos
+    ports:
+      - "5000:5000"
+
+    # Variables de entorno
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-cambiar-esta-clave-secreta-en-produccion}
+      # Servidor de almacenamiento
+      - SERVER_IP=${SERVER_IP:-192.168.10.14}
+      - SERVER_MAC=${SERVER_MAC:-b4:b5:2f:39:fd:d8}
+      - SERVER_BROADCAST=${SERVER_BROADCAST:-192.168.10.255}
+      # NFS
+      - NFS_MOUNT_POINT=/mnt/servidor
+      - NFS_EXPORT=${NFS_EXPORT:-192.168.10.14:/datos}
+      # SSH
+      - SSH_USER=${SSH_USER:-gatekeeper}
+      - SSH_KEY_PATH=/home/gatekeeper/.ssh/id_rsa
+      - SSH_PORT=${SSH_PORT:-22}
+      # Cuotas
+      - DEFAULT_QUOTA_GB=${DEFAULT_QUOTA_GB:-500}
+      - QUOTA_MOUNT_POINT=${QUOTA_MOUNT_POINT:-/datos}
+
+    # Volumenes
+    volumes:
+      # Base de datos SQLite (persistente)
+      - gatekeeper_data:/app/instance
+      # Llave SSH para conexion al servidor
+      - ${SSH_KEY_PATH:-~/.ssh/id_rsa}:/home/gatekeeper/.ssh/id_rsa:ro
+      - ${SSH_KEY_PATH:-~/.ssh/id_rsa}.pub:/home/gatekeeper/.ssh/id_rsa.pub:ro
+      # Punto de montaje NFS (compartido con el host)
+      - /mnt/servidor:/mnt/servidor:shared
+      # Directorio temporal para uploads
+      - gatekeeper_uploads:/tmp/gatekeeper_uploads
+
+    # Capacidades necesarias para NFS y red
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+
+    # Privilegios para montar NFS
+    privileged: true
+
+    # Usar red del host para WoL (broadcast) y ping
+    network_mode: host
+
+    # Seguridad
+    security_opt:
+      - apparmor:unconfined
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/auth/login')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# Volumenes persistentes
+volumes:
+  gatekeeper_data:
+    name: gatekeeper_data
+  gatekeeper_uploads:
+    name: gatekeeper_uploads

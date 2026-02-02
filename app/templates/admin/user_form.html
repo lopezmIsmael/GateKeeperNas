@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if user else 'Nuevo' }} Usuario - Gatekeeper NAS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-{{ 'gear' if user else 'plus' }} me-2"></i>
+                {{ 'Editar Usuario' if user else 'Nuevo Usuario' }}
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nombre de Usuario</label>
+                        {% if user %}
+                        <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                        <small class="text-muted">El nombre de usuario no se puede cambiar</small>
+                        {% else %}
+                        <input type="text" name="username" id="username" class="form-control"
+                               required minlength="3" maxlength="64" pattern="[a-zA-Z0-9]+"
+                               placeholder="Solo letras y numeros">
+                        <small class="text-muted">Minimo 3 caracteres, solo letras y numeros</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            {{ 'Nueva Contrasena' if user else 'Contrasena' }}
+                        </label>
+                        <input type="password" name="password" id="password" class="form-control"
+                               {% if not user %}required{% endif %} minlength="6"
+                               placeholder="{{ 'Dejar vacio para no cambiar' if user else 'Minimo 6 caracteres' }}">
+                        {% if user %}
+                        <small class="text-muted">Dejar vacio para mantener la contrasena actual</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quota_gb" class="form-label">Cuota de Almacenamiento (GB)</label>
+                        <input type="number" name="quota_gb" id="quota_gb" class="form-control"
+                               value="{{ user.quota_gb if user else 500 }}" min="1" max="10000">
+                        <small class="text-muted">Espacio maximo que puede usar este usuario</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_admin" id="is_admin" class="form-check-input"
+                                   {% if user and user.is_admin %}checked{% endif %}>
+                            <label for="is_admin" class="form-check-label">
+                                Permisos de Administrador
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            Los administradores pueden gestionar usuarios y apagar el servidor
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {{ 'Guardar Cambios' if user else 'Crear Usuario' }}
+                        </button>
+                        <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

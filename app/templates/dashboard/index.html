@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gatekeeper NAS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </h1>
+
+        <!-- Server Status Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-server me-2"></i>Estado del Servidor
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div id="server-status" class="d-flex align-items-center mb-3 mb-md-0">
+                            <div class="spinner-border spinner-border-sm text-secondary me-2" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <span class="text-muted">Verificando estado...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <button id="btn-wake" class="btn btn-success me-2" disabled>
+                            <i class="bi bi-power me-1"></i>Encender
+                        </button>
+                        {% if current_user.is_admin %}
+                        <button id="btn-shutdown" class="btn btn-danger" disabled>
+                            <i class="bi bi-stop-circle me-1"></i>Apagar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Disk Usage -->
+                <div id="disk-usage" class="mt-4 d-none">
+                    <h6><i class="bi bi-hdd me-1"></i>Almacenamiento</h6>
+                    <div class="progress" style="height: 25px;">
+                        <div id="disk-progress" class="progress-bar" role="progressbar" style="width: 0%;">
+                            0%
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1 small text-muted">
+                        <span id="disk-used">Usado: -</span>
+                        <span id="disk-free">Libre: -</span>
+                        <span id="disk-total">Total: -</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NFS Mount Status -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-hdd-network me-2"></i>Sistema de Archivos (NFS)
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div id="nfs-status" class="d-flex align-items-center mb-3 mb-md-0">
+                            <span class="text-muted">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <button id="btn-mount" class="btn btn-outline-primary me-2" disabled>
+                            <i class="bi bi-link me-1"></i>Montar
+                        </button>
+                        <button id="btn-unmount" class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-link-45deg me-1"></i>Desmontar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>Acciones Rapidas
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('files.browser') }}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-folder2-open d-block fs-3 mb-1"></i>
+                            Mis Archivos
+                        </a>
+                    </div>
+                    {% if current_user.is_admin %}
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-warning w-100 py-3">
+                            <i class="bi bi-people d-block fs-3 mb-1"></i>
+                            Usuarios
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('admin.view_logs') }}" class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-journal-text d-block fs-3 mb-1"></i>
+                            Logs
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
