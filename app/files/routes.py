@@ -1,8 +1,11 @@
 import os
 import shutil
+import mimetypes
+from datetime import datetime
 from pathlib import Path
-from flask import render_template, jsonify, request, send_file, current_app, abort
+from flask import render_template, jsonify, request, send_file, current_app, abort, Response
 from flask_login import login_required, current_user
+from werkzeug.utils import safe_join
 
 from app.files import bp
 from app.services.nfs import NFSService
@@ -81,7 +84,12 @@ def list_files():
         for entry in safe_path.iterdir():
             stat = entry.stat()
             rel_path = str(entry.relative_to(user_base))
-
+            
+            # Get MIME type for files
+            mime_type = None
+            if not entry.is_dir():
+                mime_type, _ = mimetypes.guess_type(entry.name)
+            
             items.append({
                 'name': entry.name,
                 'path': rel_path,
@@ -89,7 +97,9 @@ def list_files():
                 'size': stat.st_size if not entry.is_dir() else None,
                 'size_formatted': format_size(stat.st_size) if not entry.is_dir() else '-',
                 'modified': stat.st_mtime,
-                'modified_iso': os.path.getmtime(entry)
+                'modified_iso': os.path.getmtime(entry),
+                'created': stat.st_ctime,
+                'mime_type': mime_type
             })
     except PermissionError:
         return jsonify({'error': 'Permiso denegado'}), 403
@@ -243,3 +253,180 @@ def rename():
     except Exception as e:
         current_app.logger.error(f"Rename failed: {e}")
         return jsonify({'error': 'Error al renombrar'}), 500
+
+
+@bp.route('/api/file-info')
+@login_required
+def file_info():
+    """Get detailed file information and metadata."""
+    if not NFSService.is_mounted():
+        return jsonify({'error': 'Sistema de archivos no montado'}), 503
+
+    relative_path = request.args.get('path', '')
+    if not relative_path:
+        return jsonify({'error': 'Ruta requerida'}), 400
+
+    safe_path = get_safe_path(relative_path)
+
+    if safe_path is None:
+        return jsonify({'error': 'Ruta inválida'}), 400
+
+    if not safe_path.exists():
+        return jsonify({'error': 'Archivo no encontrado'}), 404
+
+    if safe_path.is_dir():
+        return jsonify({'error': 'Es un directorio'}), 400
+
+    try:
+        stat = safe_path.stat()
+        mime_type, encoding = mimetypes.guess_type(safe_path.name)
+        
+        file_info = {
+            'name': safe_path.name,
+            'path': relative_path,
+            'size': stat.st_size,
+            'size_formatted': format_size(stat.st_size),
+            'modified': stat.st_mtime,
+            'modified_formatted': datetime.fromtimestamp(stat.st_mtime).strftime('%d/%m/%Y %H:%M:%S'),
+            'created': stat.st_ctime,
+            'created_formatted': datetime.fromtimestamp(stat.st_ctime).strftime('%d/%m/%Y %H:%M:%S'),
+            'mime_type': mime_type or 'application/octet-stream',
+            'encoding': encoding,
+            'extension': safe_path.suffix.lower(),
+            'is_text': is_text_file(mime_type),
+            'is_image': is_image_file(mime_type),
+            'is_video': is_video_file(mime_type),
+            'is_audio': is_audio_file(mime_type),
+            'is_pdf': mime_type == 'application/pdf',
+            'is_office': is_office_file(safe_path.suffix.lower()),
+            'can_preview': can_preview_file(mime_type, safe_path.suffix.lower())
+        }
+        
+        return jsonify(file_info)
+    except Exception as e:
+        current_app.logger.error(f"File info failed: {e}")
+        return jsonify({'error': 'Error al obtener información del archivo'}), 500
+
+
+@bp.route('/api/preview')
+@login_required
+def preview():
+    """Preview file content for supported file types."""
+    if not NFSService.is_mounted():
+        return jsonify({'error': 'Sistema de archivos no montado'}), 503
+
+    relative_path = request.args.get('path', '')
+    if not relative_path:
+        return jsonify({'error': 'Ruta requerida'}), 400
+
+    safe_path = get_safe_path(relative_path)
+
+    if safe_path is None:
+        return jsonify({'error': 'Ruta inválida'}), 400
+
+    if not safe_path.exists():
+        return jsonify({'error': 'Archivo no encontrado'}), 404
+
+    if safe_path.is_dir():
+        return jsonify({'error': 'Es un directorio'}), 400
+
+    try:
+        mime_type, _ = mimetypes.guess_type(safe_path.name)
+        
+        # For images, videos, audio, and PDFs, serve the file directly
+        if is_image_file(mime_type) or is_video_file(mime_type) or \
+           is_audio_file(mime_type) or mime_type == 'application/pdf':
+            return send_file(safe_path, mimetype=mime_type)
+        
+        # For text files, read content
+        if is_text_file(mime_type) or safe_path.suffix.lower() in ['.md', '.txt', '.json', '.xml', '.csv']:
+            try:
+                with open(safe_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                return jsonify({
+                    'content': content,
+                    'mime_type': mime_type or 'text/plain'
+                })
+            except UnicodeDecodeError:
+                return jsonify({'error': 'No se puede previsualizar este archivo de texto'}), 400
+        
+        return jsonify({'error': 'Tipo de archivo no soportado para previsualización'}), 400
+        
+    except Exception as e:
+        current_app.logger.error(f"Preview failed: {e}")
+        return jsonify({'error': 'Error al previsualizar archivo'}), 500
+
+
+@bp.route('/api/serve/<path:filepath>')
+@login_required
+def serve_file(filepath):
+    """Serve file for inline viewing (not download)."""
+    if not NFSService.is_mounted():
+        abort(503)
+
+    safe_path = get_safe_path(filepath)
+
+    if safe_path is None or not safe_path.exists() or safe_path.is_dir():
+        abort(404)
+
+    mime_type, _ = mimetypes.guess_type(safe_path.name)
+    return send_file(safe_path, mimetype=mime_type, as_attachment=False)
+
+
+def is_text_file(mime_type: str | None) -> bool:
+    """Check if file is a text file."""
+    if not mime_type:
+        return False
+    return mime_type.startswith('text/')
+
+
+def is_image_file(mime_type: str | None) -> bool:
+    """Check if file is an image."""
+    if not mime_type:
+        return False
+    return mime_type.startswith('image/')
+
+
+def is_video_file(mime_type: str | None) -> bool:
+    """Check if file is a video."""
+    if not mime_type:
+        return False
+    return mime_type.startswith('video/')
+
+
+def is_audio_file(mime_type: str | None) -> bool:
+    """Check if file is audio."""
+    if not mime_type:
+        return False
+    return mime_type.startswith('audio/')
+
+
+def is_office_file(extension: str) -> bool:
+    """Check if file is a Microsoft Office document."""
+    office_extensions = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
+    return extension in office_extensions
+
+
+def can_preview_file(mime_type: str | None, extension: str) -> bool:
+    """Check if file can be previewed."""
+    if not mime_type:
+        return False
+    
+    # Check by MIME type
+    if mime_type.startswith(('image/', 'video/', 'audio/', 'text/')):
+        return True
+    
+    if mime_type == 'application/pdf':
+        return True
+    
+    # Check by extension
+    previewable_extensions = ['.md', '.txt', '.json', '.xml', '.csv', '.log', 
+                             '.py', '.js', '.html', '.css', '.yaml', '.yml']
+    if extension in previewable_extensions:
+        return True
+    
+    # Office files (will use viewer)
+    if is_office_file(extension):
+        return True
+    
+    return False

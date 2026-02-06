@@ -65,10 +65,11 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th style="width: 50%;">Nombre</th>
-                                <th style="width: 15%;">Tamano</th>
-                                <th style="width: 20%;">Modificado</th>
-                                <th style="width: 15%;" class="text-end">Acciones</th>
+                                <th style="width: 40%;">Nombre</th>
+                                <th style="width: 12%;">Tamaño</th>
+                                <th style="width: 15%;">Tipo</th>
+                                <th style="width: 15%;">Modificado</th>
+                                <th style="width: 18%;" class="text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="file-list">
@@ -153,10 +154,74 @@
         </div>
     </div>
 </div>
+
+<!-- File Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex flex-column w-100">
+                    <h5 class="modal-title" id="preview-title">
+                        <i class="bi bi-eye me-2"></i><span id="preview-filename">Archivo</span>
+                    </h5>
+                    <div class="text-muted small mt-1" id="preview-subtitle"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="preview-body">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Cargando previsualizacion...</p>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div id="preview-metadata" class="small text-muted"></div>
+                <div>
+                    <a href="#" id="preview-download-btn" class="btn btn-primary" download>
+                        <i class="bi bi-download me-1"></i>Descargar
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Info Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Información del Archivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="info-body">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 {% if mounted %}
+<!-- Markdown renderer -->
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+<!-- Syntax highlighting for code -->
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/xml.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+
 <script src="{{ url_for('static', filename='js/files.js') }}"></script>
 <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
 {% endif %}

@@ -183,3 +183,195 @@ body {
     margin-bottom: 1rem;
     opacity: 0.5;
 }
+
+/* File Preview Styles */
+.modal-xl {
+    max-width: 90%;
+}
+
+#preview-body {
+    background-color: #1a1a1a;
+    min-height: 400px;
+}
+
+#preview-body pre {
+    margin: 0;
+    background: #1e1e1e;
+    border-radius: 0;
+}
+
+#preview-body pre code {
+    display: block;
+    padding: 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* Markdown Preview Styles */
+.markdown-body {
+    background: #fff;
+    color: #24292e;
+    padding: 2rem;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #24292e;
+}
+
+.markdown-body h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-body h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-body p {
+    margin-bottom: 1em;
+}
+
+.markdown-body code {
+    background-color: rgba(27, 31, 35, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 85%;
+}
+
+.markdown-body pre {
+    background-color: #f6f8fa;
+    padding: 16px;
+    overflow: auto;
+    border-radius: 6px;
+}
+
+.markdown-body pre code {
+    background: transparent;
+    padding: 0;
+    font-size: 100%;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+    padding-left: 2em;
+    margin-bottom: 1em;
+}
+
+.markdown-body blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin-bottom: 1em;
+}
+
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.markdown-body table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+}
+
+.markdown-body a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.markdown-body a:hover {
+    text-decoration: underline;
+}
+
+/* Info Modal Styles */
+#info-body code {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+/* File type badges */
+.file-type-badge {
+    display: inline-block;
+    padding: 0.25em 0.5em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+}
+
+/* Preview button hover effect */
+.btn-preview:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+/* Improved file icon sizing in preview */
+#info-body .fs-1 {
+    font-size: 3rem !important;
+}
+
+/* Video and audio controls */
+video, audio {
+    outline: none;
+}
+
+/* iframe for PDF and Office previews */
+iframe {
+    border: none;
+    background: #fff;
+}
+
+/* Loading spinner in preview modal */
+#preview-body .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Better scrollbar for code preview */
+#preview-body pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+#preview-body pre::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+#preview-body pre::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+#preview-body pre::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
