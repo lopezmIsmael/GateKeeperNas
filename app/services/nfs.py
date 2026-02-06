@@ -86,11 +86,19 @@ class NFSService:
 
     @staticmethod
     def ensure_user_directory(username: str) -> bool:
-        """Ensure user directory exists on NFS mount."""
+        """Ensure user directory exists on NFS mount via SSH to server."""
+        from app.services.quota import QuotaService
+        from app.services.power import PowerService
+
         user_path = NFSService.get_user_path(username)
-        try:
-            os.makedirs(user_path, exist_ok=True)
+
+        # If directory already exists locally, we're good
+        if os.path.exists(user_path):
             return True
-        except Exception as e:
-            current_app.logger.error(f"Failed to create user directory: {e}")
+
+        # Otherwise, create it on the server via SSH
+        if not PowerService.ping():
+            current_app.logger.error("Server not available to create user directory")
             return False
+
+        return QuotaService.create_user_directory(username)

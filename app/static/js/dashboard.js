@@ -179,8 +179,31 @@
                 btnMount.disabled = status.nfs_mounted;
                 btnUnmount.disabled = !status.nfs_mounted;
 
-                // Update disk usage
-                if (status.disk_total) {
+                // Update disk usage - show user quota if available
+                if (status.user_quota) {
+                    // User has quota - show their personal limits
+                    diskUsage.classList.remove('d-none');
+                    const used = status.user_quota.used_bytes;
+                    const limit = status.user_quota.limit_bytes;
+                    const percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
+
+                    diskProgress.style.width = percent + '%';
+                    diskProgress.textContent = percent + '%';
+                    diskProgress.className = 'progress-bar';
+
+                    if (percent > 90) {
+                        diskProgress.classList.add('bg-danger');
+                    } else if (percent > 70) {
+                        diskProgress.classList.add('bg-warning');
+                    } else {
+                        diskProgress.classList.add('bg-success');
+                    }
+
+                    diskUsed.textContent = 'Usado: ' + formatBytes(used);
+                    diskFree.textContent = 'Libre: ' + formatBytes(limit - used);
+                    diskTotal.textContent = 'Tu cuota: ' + formatBytes(limit);
+                } else if (status.disk_total) {
+                    // Admin or no quota - show total disk
                     diskUsage.classList.remove('d-none');
                     const percent = status.disk_used_percent || 0;
 

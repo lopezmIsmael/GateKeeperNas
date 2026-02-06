@@ -5,6 +5,7 @@ from app.dashboard import bp
 from app.models import db, ServerLog
 from app.services.power import PowerService
 from app.services.nfs import NFSService
+from app.services.quota import QuotaService
 
 
 @bp.route('/')
@@ -20,6 +21,19 @@ def server_status():
     """Get current server status."""
     status = PowerService.get_status()
     status['nfs_mounted'] = NFSService.is_mounted()
+
+    # For non-admin users, show their quota instead of total disk
+    if not current_user.is_admin and status['online']:
+        quota_info = QuotaService.get_quota(current_user.username)
+        if quota_info and quota_info.get('limit_gb', 0) > 0:
+            # User has a quota set - show their quota limits
+            status['user_quota'] = {
+                'used_bytes': quota_info['used_kb'] * 1024,
+                'limit_bytes': quota_info['hard_limit_kb'] * 1024,
+                'used_gb': quota_info['used_gb'],
+                'limit_gb': quota_info['limit_gb']
+            }
+
     return jsonify(status)
 
 
@@ -54,13 +68,7 @@ def wake_server():
 @bp.route('/api/server/shutdown', methods=['POST'])
 @login_required
 def shutdown_server():
-    """Shutdown the server via SSH."""
-    if not current_user.is_admin:
-        return jsonify({
-            'success': False,
-            'message': 'Solo los administradores pueden apagar el servidor'
-        }), 403
-
+    """Shutdown the server via SSH. All users can shutdown."""
     # First unmount NFS
     NFSService.unmount()
 

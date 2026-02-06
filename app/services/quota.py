@@ -76,7 +76,8 @@ class QuotaService:
         mount_point = current_app.config['QUOTA_MOUNT_POINT']
 
         stdout, stderr, code = execute_remote(
-            f'quota -u {username} -w 2>/dev/null | tail -1'
+            f'quota -u {username} -w 2>/dev/null | tail -1',
+            sudo=True
         )
 
         if code != 0 or not stdout:
