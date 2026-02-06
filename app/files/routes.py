@@ -10,6 +10,14 @@ from werkzeug.utils import safe_join
 from app.files import bp
 from app.services.nfs import NFSService
 
+# Initialize mimetypes with common types
+mimetypes.init()
+# Add additional MIME types for better support
+mimetypes.add_type('image/webp', '.webp')
+mimetypes.add_type('video/webm', '.webm')
+mimetypes.add_type('video/x-matroska', '.mkv')
+mimetypes.add_type('image/avif', '.avif')
+
 
 def get_safe_path(relative_path: str) -> Path | None:
     """

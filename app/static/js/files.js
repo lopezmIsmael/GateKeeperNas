@@ -143,7 +143,7 @@
     async function loadFiles(path = '') {
         fileList.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-muted py-4">
+                <td colspan="5" class="text-center text-muted py-4">
                     <div class="spinner-border spinner-border-sm me-2"></div>
                     Cargando archivos...
                 </td>
@@ -164,7 +164,7 @@
         } catch (error) {
             fileList.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-danger py-4">
+                    <td colspan="5" class="text-center text-danger py-4">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         ${error.message}
                     </td>
@@ -253,24 +253,29 @@
     }
     
     function isPreviewable(filename, mimeType) {
-        if (!mimeType) return false;
-        
-        // Images, videos, audio, PDFs
-        if (mimeType.startsWith('image/') || mimeType.startsWith('video/') || 
-            mimeType.startsWith('audio/') || mimeType === 'application/pdf') {
-            return true;
+        // Check by MIME type first
+        if (mimeType) {
+            // Images, videos, audio, PDFs
+            if (mimeType.startsWith('image/') || mimeType.startsWith('video/') || 
+                mimeType.startsWith('audio/') || mimeType === 'application/pdf') {
+                return true;
+            }
+            
+            // Text files
+            if (mimeType.startsWith('text/')) {
+                return true;
+            }
         }
         
-        // Text files
-        if (mimeType.startsWith('text/')) {
-            return true;
-        }
-        
-        // Check by extension
+        // Check by extension (fallback if no MIME type)
         const ext = filename.split('.').pop().toLowerCase();
         const previewableExts = ['md', 'txt', 'json', 'xml', 'csv', 'log', 
                                  'py', 'js', 'html', 'css', 'yaml', 'yml',
-                                 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+                                 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+                                 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico',
+                                 'mp4', 'avi', 'mkv', 'mov', 'webm',
+                                 'mp3', 'wav', 'flac', 'ogg',
+                                 'pdf'];
         return previewableExts.includes(ext);
     }
 
